@@ -87,12 +87,14 @@ bool isValid(int number, bool isScore)
 */
 int maxValue(int numberArray[], int sizeOfArray)
 {
-    int currentMaxValue = 0;
+    int currentMaxValue = numberArray[0];
     FOR(i, sizeOfArray)
     {
-        if (numberArray[i] > currentMaxValue)
+        if ((numberArray[i] > currentMaxValue) && (numberArray[i] != -1))
             currentMaxValue = numberArray[i];
     }
+    if (currentMaxValue == -1)
+        currentMaxValue = 0;
     return currentMaxValue;
 }
 
@@ -101,26 +103,32 @@ int maxValue(int numberArray[], int sizeOfArray)
 */
 int minValue(int numberArray[], int sizeOfArray)
 {
-    int currentMinValue = 100;
+    int currentMinValue = numberArray[0];
     FOR(i, sizeOfArray)
     {
-        if (numberArray[i] < currentMinValue)
+        if ((numberArray[i] < currentMinValue) && (numberArray[i] != -1))
             currentMinValue = numberArray[i];
     }
+    if (currentMinValue == -1)
+        currentMinValue = 0;
     return currentMinValue;
 }
 
 /*
 
 */
-float averageValue(int numberArray[], int sizeOfArray)
+float averageValue(int numberArray[], int sizeOfArray, int numberOfIgnored)
 {
-    float averageValue, sumValue = 0.0;
+    float averageValue = 0.0, sumValue = 0.0;
     FOR(i, sizeOfArray)
     {
-        sumValue += numberArray[i];
+        if (numberArray[i] == -1)
+            continue;
+        else
+            sumValue += numberArray[i];
     }
-    averageValue = sumValue / sizeOfArray;
+    if ((sizeOfArray - numberOfIgnored) > 0)
+        averageValue = sumValue / (sizeOfArray - numberOfIgnored);
     return averageValue;
 }
 
@@ -171,7 +179,7 @@ bool isInputtingNumberOfStudentsSuccess(int *numberOfStudents)
 bool isInputtingScoresSuccess(struct scoreReportStruct *scoreReport, int numberOfStudents)
 {
     //  checking if input is valid or not
-    int modifiedInput[numberOfStudents];
+    int modifiedInput[numberOfStudents], numberOfIgnored = 0;
     printf("scores = ");
     FOR(i, numberOfStudents)
     {
@@ -179,10 +187,11 @@ bool isInputtingScoresSuccess(struct scoreReportStruct *scoreReport, int numberO
         scanf("%s", rawInput);
         if (isInteger(rawInput) && (isValid(atoi(rawInput), true)))
         {
-            if (rawInput == "-1")
-                modifiedInput[i] = 0;
-            else
-                modifiedInput[i] = atoi(rawInput);
+            modifiedInput[i] = atoi(rawInput);
+            if (modifiedInput[i] == -1)
+            {
+                numberOfIgnored++;
+            }
         }
         else
         {
@@ -192,7 +201,7 @@ bool isInputtingScoresSuccess(struct scoreReportStruct *scoreReport, int numberO
     }
     scoreReport->minScore = minValue(modifiedInput, numberOfStudents);
     scoreReport->maxScore = maxValue(modifiedInput, numberOfStudents);
-    scoreReport->averageScore = averageValue(modifiedInput, numberOfStudents);
+    scoreReport->averageScore = averageValue(modifiedInput, numberOfStudents, numberOfIgnored);
     scoreReport->numberOfPassed = passedNumbers(modifiedInput, numberOfStudents, PASSED_SCORE_);
     scoreReport->percentOfPassed = div(scoreReport->numberOfPassed * 100, numberOfStudents).quot;
     return true;
